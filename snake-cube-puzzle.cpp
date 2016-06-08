@@ -15,7 +15,7 @@
     Filename: snake-cube-puzzle.cpp
 
     Description:
-    This programs calculates the sequence of steps to solve the snake cube puzzle
+    This program calculates the sequence of steps to solve the snake cube puzzle
 
     Author: Marco Residori (residori@gmx.net)
 */
@@ -259,9 +259,8 @@ class cSequence
 {
     public:
         cSequence();
-        ~cSequence();
         cSequence & operator = (cSequence & rhs);
-        bool isSequenceComplete();
+        ~cSequence();
         void init();
         bool add(tRotation rotation,int index);
         void print();
