@@ -1,5 +1,5 @@
 ============================
-Wood-Snake-Cube
+Snake-Cube-Puzzle
 ============================
 
 Simple program that calculates the steps to turn this snake:
@@ -10,4 +10,14 @@ into this cube:
 
 ![cube](images/cube.png) 
 
-  
+----------------------------------
+How to build and run the program
+----------------------------------
+```
+make
+./snake-cube-puzzle
+```
+
+The solution is calculated using the following coordinate system:
+
+![coordinate-system](images/coordinate-system.png)

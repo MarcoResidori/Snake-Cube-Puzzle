@@ -12,20 +12,22 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-    Filename: wood-snake-cube.cpp
+    Filename: snake-cube-puzzle.cpp
 
     Description:
-    This programs calculates the sequence of steps to solve a 3x3x3 wood snake cube
+    This programs calculates the sequence of steps to solve the snake cube puzzle
 
     Author: Marco Residori (residori@gmx.net)
 */
 
 
 #include <stdio.h>
-#include <memory.h>
+
 #define NUM_SEGMENTS 17
+static int theSegments[NUM_SEGMENTS] = {3,2,2,3,2,3,2,2,3,3,2,2,2,3,3,3,3};
 
 static int numSolutions = 0;
+
 enum eAxis
 {
     AXIS_X = 0,
@@ -53,11 +55,6 @@ struct tPoint
     int y;
     int z;
 };
-
-class cMatrix;
-class cSequence;
-
-bool calculate(tPoint point1, int index, cSequence sequence, cMatrix matrix);
 
 class cMatrix
 {
@@ -266,8 +263,8 @@ class cSequence
         cSequence & operator = (cSequence & rhs);
         bool isSequenceComplete();
         void init();
-        void print();
         bool add(tRotation rotation,int index);
+        void print();
 
     private:
         tRotation mSequence[NUM_SEGMENTS];
@@ -287,6 +284,10 @@ cSequence & cSequence::operator = (cSequence & rhs)
     return rhs;
 }
 
+cSequence::~cSequence()
+{
+};
+
 void cSequence::init()
 {
     for(int i = 0; i< NUM_SEGMENTS; i++)
@@ -296,17 +297,18 @@ void cSequence::init()
     }
 };
 
-cSequence::~cSequence()
+bool cSequence::add(tRotation rotation,int index)
 {
+    mSequence[index].axis = rotation.axis;
+    mSequence[index].direction = rotation.direction;
+    return true;
 };
 
 void cSequence::print()
 {
-    printf("\nSequence: \n");
     for(int i = 0; i < NUM_SEGMENTS; i++)
     {
         printf("Step %2d -> [",i);
-        printf("rot ");
         switch(mSequence[i].axis)
         {
             case AXIS_X:
@@ -322,8 +324,7 @@ void cSequence::print()
                printf("AXIS_INVALID");
                break;
         }
-        printf(", dir ");
-
+        printf(",");
         switch(mSequence[i].direction)
         {
             case DIR_POS:
@@ -336,125 +337,25 @@ void cSequence::print()
                printf("DIR_INVALID");
                break;
         }
-        printf("]\n");
+        printf(",LENGTH_%d]\n",theSegments[i]);
     }
 };
 
-void printRotation(tRotation rotation)
-{
-    printf("rot ");
-    switch(rotation.axis)
-    {
-        case AXIS_X:
-            printf("AXIS_X,");
-            break;
-        case AXIS_Y:
-            printf("AXIS_Y,");
-            break;
-        case AXIS_Z:
-            printf("AXIS_Z,");
-            break;
-        default:
-            printf("AXIS_INVALID,");
-            break;
-    }
-    printf("dir ");
-    switch(rotation.direction)
-    {
-        case DIR_POS:
-            printf("DIR_POS");
-            break;
-        case DIR_NEG:
-            printf("DIR_NEG");
-            break;
-        default:
-            printf("DIR_INVALID");
-            break;
-    }
-    printf(")\n");
-};
+class cSequence;
+class cMatrix;
 
-bool cSequence::add(tRotation rotation,int index)
-{
-    mSequence[index].axis = rotation.axis;
-    mSequence[index].direction = rotation.direction;
-    return true;
-};
-
-static int theSegments[NUM_SEGMENTS] = {3,2,2,3,2,3,2,2,3,3,2,2,2,3,3,3,3};
-cSequence theSequence;
-cMatrix theMatrix;
-
-
-bool calculateEndPoint(tPoint point1, int segment, tRotation rotation, tPoint& point2)
-{
-    switch(rotation.axis)
-    {
-    case AXIS_X:
-       point2.x = rotation.direction == DIR_POS ? point1.x + segment - 1: point1.x - segment + 1;
-       point2.y = point1.y;
-       point2.z = point1.z;
-       break;
-    case AXIS_Y:
-       point2.y = rotation.direction == DIR_POS ? point1.y + segment - 1: point1.y - segment + 1;
-       point2.x = point1.x;
-       point2.z = point1.z;
-       break;
-    case AXIS_Z:
-       point2.z = rotation.direction == DIR_POS ? point1.z + segment - 1: point1.z - segment + 1;
-       point2.x = point1.x;
-       point2.y = point1.y;
-       break;
-    default:
-       break;
-    }
-    return true;
-}
-
-bool step(tPoint point1, tRotation rotation, int index, cSequence sequence, cMatrix matrix)
-{
-    tPoint point2 = {0,0,0};
-
-    if(index >= NUM_SEGMENTS)
-    {
-       printf("Error\n");
-       return false;
-    }
-
-    if(calculateEndPoint(point1,theSegments[index],rotation,point2))
-    {
-       if(matrix.isInside(point2))
-       {
-          if(matrix.isOccupied(point1,point2) == false)
-          {             
-             matrix.setOccupied(point1,point2);
-             //printf("Adding index %d,", index); printRotation(rotation);
-             sequence.add(rotation,index);
-             calculate(point2,++index,sequence,matrix);
-          }
-          else
-          {
-              //printf("Path {%d,%d,%d}->{%d,%d,%d} is occupied\n",point1.x,point1.y,point1.z,point2.x,point2.y,point2.z);
-          }
-       }
-       else
-       {
-           //printf("Point {%d,%d,%d} is outside\n",point2.x,point2.y,point2.z);
-       }
-    }
-
-    return true;
-}
+bool step(tPoint point1, tRotation rotation, int index, cSequence sequence, cMatrix matrix);
+bool calculateEndPoint(tPoint point1, int segment, tRotation rotation, tPoint& point2);
 
 bool calculate(tPoint point1, int index, cSequence sequence, cMatrix matrix)
 {
     tRotation rotation;
 
     if(index >= NUM_SEGMENTS)
-    {
+    {   
+        printf("\nSolution %d:\n",++numSolutions);
         sequence.print();
         //matrix.print();
-        numSolutions++;
         return true;
     }
 
@@ -493,60 +394,156 @@ bool calculate(tPoint point1, int index, cSequence sequence, cMatrix matrix)
     return true;
 }
 
+bool step(tPoint point1, tRotation rotation, int index, cSequence sequence, cMatrix matrix)
+{
+    tPoint point2 = {0,0,0};
+
+    if(index >= NUM_SEGMENTS)
+    {
+       printf("Error\n");
+       return false;
+    }
+
+    if(calculateEndPoint(point1,theSegments[index],rotation,point2))
+    {
+       if(matrix.isInside(point2))
+       {
+          if(matrix.isOccupied(point1,point2) == false)
+          {             
+             matrix.setOccupied(point1,point2);
+             sequence.add(rotation,index);
+             calculate(point2,++index,sequence,matrix);
+          }
+          else
+          {
+              //printf("Path {%d,%d,%d}->{%d,%d,%d} is occupied\n",point1.x,point1.y,point1.z,point2.x,point2.y,point2.z);
+          }
+       }
+       else
+       {
+           //printf("Point {%d,%d,%d} is outside\n",point2.x,point2.y,point2.z);
+       }
+    }
+
+    return true;
+}
+
+bool calculateEndPoint(tPoint point1, int segment, tRotation rotation, tPoint& point2)
+{
+    switch(rotation.axis)
+    {
+    case AXIS_X:
+       point2.x = rotation.direction == DIR_POS ? point1.x + segment - 1: point1.x - segment + 1;
+       point2.y = point1.y;
+       point2.z = point1.z;
+       break;
+    case AXIS_Y:
+       point2.y = rotation.direction == DIR_POS ? point1.y + segment - 1: point1.y - segment + 1;
+       point2.x = point1.x;
+       point2.z = point1.z;
+       break;
+    case AXIS_Z:
+       point2.z = rotation.direction == DIR_POS ? point1.z + segment - 1: point1.z - segment + 1;
+       point2.x = point1.x;
+       point2.y = point1.y;
+       break;
+    default:
+       break;
+    }
+    return true;
+}
+
+void printRotation(tRotation rotation)
+{
+    printf("(");
+    switch(rotation.axis)
+    {
+        case AXIS_X:
+            printf("AXIS_X");
+            break;
+        case AXIS_Y:
+            printf("AXIS_Y");
+            break;
+        case AXIS_Z:
+            printf("AXIS_Z");
+            break;
+        default:
+            printf("AXIS_INVALID");
+            break;
+    }
+    printf(",");
+    switch(rotation.direction)
+    {
+        case DIR_POS:
+            printf("DIR_POS");
+            break;
+        case DIR_NEG:
+            printf("DIR_NEG");
+            break;
+        default:
+            printf("DIR_INVALID");
+            break;
+    }
+    printf(")\n");
+};
+
 int main(int argc, char* argv[])
 {
     tPoint point;
+    cSequence theSequence;
+    cMatrix theMatrix;
 
-    printf("Start!\n");
+    printf("\n");
 
-    //possible cases
-    printf("--------------------------------------------------\n");
-    printf("Case 1\n"); //corner
-    printf("--------------------------------------------------\n");
+    //the starting point is a corner
     theMatrix.init();
     theSequence.init();
     point.x = 0;
     point.y = 0;
     point.z = 0;
-    printf("Starting point {%d,%d,%d}\n",point.x,point.y,point.z);
+    printf("-------------------------------------\n");
+    printf("Case 1 - Starting Point (%d,%d,%d)\n",point.x,point.y,point.z);
+    printf("-------------------------------------\n");
     calculate(point,0,theSequence,theMatrix);
-    
-    printf("--------------------------------------------------\n");
-    printf("Case 2\n"); //middle side
-    printf("--------------------------------------------------\n");
+    printf("\n");
+
+    //the starting point the center of an edge
     theMatrix.init();
     theSequence.init();
     point.x = 1;
     point.y = 0;
     point.z = 0;
-    printf("Starting point {%d,%d,%d}\n",point.x,point.y,point.z);
+    printf("-------------------------------------\n");
+    printf("Case 2 - Starting Point (%d,%d,%d)\n",point.x,point.y,point.z);
+    printf("-------------------------------------\n");
     calculate(point,0,theSequence,theMatrix);
+    printf("\n");
 
-    printf("--------------------------------------------------\n");
-    printf("Case 3\n"); //middle base
-    printf("--------------------------------------------------\n");
+    //the starting point is the center of a face
     theMatrix.init();
     theSequence.init();
     point.x = 1;
     point.y = 1;
     point.z = 0;
-    printf("Starting point {%d,%d,%d}\n",point.x,point.y,point.z);
+    printf("-------------------------------------\n");
+    printf("Case 3 - Starting Point (%d,%d,%d)\n",point.x,point.y,point.z);
+    printf("-------------------------------------\n");
     calculate(point,0,theSequence,theMatrix);
+    printf("\n");
 
-    printf("--------------------------------------------------\n");
-    printf("Case 4\n"); //middle cube
-    printf("--------------------------------------------------\n");
+    //the starting point is the center of the cube
     theMatrix.init();
     theSequence.init();
     point.x = 1;
     point.y = 1;
     point.z = 1;
-    printf("Starting point {%d,%d,%d}\n",point.x,point.y,point.z);
+    printf("-------------------------------------\n");
+    printf("Case 4 - Starting Point (%d,%d,%d)\n",point.x,point.y,point.z);
+    printf("-------------------------------------\n");
     calculate(point,0,theSequence,theMatrix);
+    printf("\n");
 
-    printf("\nNumber of solutions: %d\n", numSolutions);
-
-    printf("\nEnd!\n");
+    printf("Number of solutions: %d\n\n", numSolutions);
 
     return 0;
 }

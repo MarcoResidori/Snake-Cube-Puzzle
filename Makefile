@@ -1,5 +1,5 @@
-all: wood-snake-cube.cpp 
-	g++ -g -Wall -o wood-snake-cube wood-snake-cube.cpp
+all: snake-cube-puzzle.cpp 
+	g++ -g -Wall -o snake-cube-puzzle snake-cube-puzzle.cpp
 
 clean: 
-	rm -f wood-snake-cube
+	rm -f snake-cube-puzzle
