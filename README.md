@@ -13,6 +13,7 @@ into this cube:
 ----------------------------------
 How to build and run the program
 ----------------------------------
+
 ```
 make
 ./snake-cube-puzzle
