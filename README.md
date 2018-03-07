@@ -8,9 +8,7 @@ into this cube:
 
 ![cube](images/cube.png) 
 
-----------------------------------
-How to build and run the program
-----------------------------------
+## How to build and run the program
 
 ```
 make
