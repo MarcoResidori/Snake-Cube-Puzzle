@@ -1,6 +1,4 @@
-============================
-Snake-Cube-Puzzle
-============================
+# Snake-Cube-Puzzle
 
 Simple program that calculates the steps to turn this snake:
 
